@@ -135,4 +135,9 @@
       </library>
     </orderEntry>
   </component>
+  <component name="SbtModule">
+    <option name="buildForURI" value="file:/$MODULE_DIR$/../../" />
+    <option name="imports" value="SUB:DOLLARc958794a28a8fb1730ff.`root`, _root_.sbt.Keys._, _root_.sbt.ScriptedPlugin.autoImport._, _root_.sbt.plugins.JUnitXmlReportPlugin.autoImport._, _root_.sbt.plugins.MiniDependencyTreePlugin.autoImport._, _root_.bloop.integrations.sbt.BloopPlugin.autoImport._, _root_.com.github.sbt.git.GitPlugin.autoImport._, _root_.sbtassembly.AssemblyPlugin.autoImport._, _root_.scoverage.ScoverageSbtPlugin.autoImport._, _root_.org.scalastyle.sbt.ScalastylePlugin.autoImport._, _root_.nl.zolotko.sbt.gitlab.GitlabPlugin.autoImport._, _root_.sbt._, _root_.sbt.nio.Keys._, _root_.sbt.plugins.IvyPlugin, _root_.sbt.plugins.JvmPlugin, _root_.sbt.plugins.CorePlugin, _root_.sbt.ScriptedPlugin, _root_.sbt.plugins.SbtPlugin, _root_.sbt.plugins.SemanticdbPlugin, _root_.sbt.plugins.JUnitXmlReportPlugin, _root_.sbt.plugins.Giter8TemplatePlugin, _root_.sbt.plugins.MiniDependencyTreePlugin, _root_.bloop.integrations.sbt.BloopPlugin, _root_.com.github.sbt.git.GitBranchPrompt, _root_.com.github.sbt.git.GitPlugin, _root_.com.github.sbt.git.GitVersioning, _root_.sbtassembly.AssemblyPlugin, _root_.scoverage.ScoverageSbtPlugin, _root_.org.scalastyle.sbt.ScalastylePlugin, _root_.nl.zolotko.sbt.gitlab.GitlabPlugin, _root_.scala.xml.{TopScope=&gt;SUB:DOLLARscope}" />
+    <option name="resolvers" value="C:\Users\vanha\.ivy2\cache|ivy|true|Local cache, https://repo1.maven.org/maven2/|maven|public" />
+  </component>
 </module>
