@@ -1,0 +1,32 @@
+spec:
+  inputs:
+    stage:
+      default: "test"
+    scala_version:
+      default: "2.13.14"
+    additional_libs:
+      default: ""
+---
+include:
+  - local: /templates/base.yml
+    inputs:
+      stage: $[[ inputs.stage ]]
+      scala_version: '$[[ inputs.scala_version ]]' 
+      additional_libs: $[[ inputs.additional_libs ]]
+      job_uid: test-coverage
+
+.test-coverage:
+  extends: .sbt-base-test-coverage
+  script:
+    - sbt clean coverage test
+    - sbt coverageReport
+    - mv $(find target/ -name cobertura.xml | head -1) target/
+  coverage: '/Statement coverage\.*: (\d{1,3}\.\d{2})%/'
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: target/cobertura.xml
+
+test-coverage:
+  extends: .test-coverage

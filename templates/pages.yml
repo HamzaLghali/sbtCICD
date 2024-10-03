@@ -1,0 +1,28 @@
+spec:
+  inputs:
+    stage:
+      default: deploy
+    additional_libs:
+      default: ""
+    scala_version:
+      default: "2.13.14"
+---
+include:
+  - local: /templates/base.yml
+    inputs:
+      stage: $[[ inputs.stage ]]
+      scala_version: '$[[ inputs.scala_version ]]'
+      additional_libs: $[[ inputs.additional_libs ]]
+      job_uid: pages
+
+.pages:
+  extends: .sbt-base-pages
+  script:
+    - sbt doc
+    - mv $(find target/ -wholename target/scala-*/api -type d | head -1) public
+  artifacts:
+    paths:
+      - public
+
+pages:
+  extends: .pages

@@ -1,0 +1,24 @@
+spec:
+  inputs:
+    stage:
+      default: "publish"
+    scala_version:
+      default: "2.13.14"
+    additional_libs:
+      default: ""
+---
+include:
+  - local: /templates/base.yml
+    inputs:
+      stage: $[[ inputs.stage ]]
+      scala_version: '$[[ inputs.scala_version ]]' 
+      additional_libs: $[[ inputs.additional_libs ]]
+      job_uid: publish-lib
+
+.publish-lib:
+  extends: .sbt-base-publish-lib
+  script:
+    - sbt publish
+
+publish-lib:
+  extends: .publish-lib

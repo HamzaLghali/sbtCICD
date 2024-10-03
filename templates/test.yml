@@ -1,0 +1,35 @@
+spec:
+  inputs:
+    stage:
+      default: "test"
+    check_style:
+      default: false
+      type: boolean
+      description: "Checks scalastyle rules"
+    scala_version:
+      default: "2.13.14"
+    additional_libs:
+      default: ""
+---
+include:
+  - local: /templates/base.yml
+    inputs:
+      stage: $[[ inputs.stage ]]
+      scala_version: '$[[ inputs.scala_version ]]' 
+      additional_libs: $[[ inputs.additional_libs ]]
+      job_uid: test
+
+.test:
+  extends: .sbt-base-test
+  script:
+    - sbt test
+    - if $[[ inputs.check_style ]]; then sbt test:scalastyle; fi
+  artifacts:
+    when: always
+    paths:
+      - target/test-reports/
+    reports:
+      junit: target/test-reports/*.xml
+
+test:
+  extends: .test

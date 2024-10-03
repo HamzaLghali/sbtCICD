@@ -1,0 +1,37 @@
+spec:
+  inputs:
+    scala_version:
+      options:
+        - "2.13.14"
+        - "3.3.3"
+        - "3.4.2"
+      regex: ^\d.\d+.\d+$
+      default: "2.13.14"
+---
+stages: ["test", "build", "deploy"]
+
+include:
+ - component: $CI_SERVER_FQDN/ub-unibas/ci/sbt-components/test@main
+   inputs:
+     scala_version: $[[ inputs.scala_version ]]
+ - component: $CI_SERVER_FQDN/ub-unibas/ci/sbt-components/test-coverage@main
+   inputs:
+     scala_version: $[[ inputs.scala_version ]]
+ - component: $CI_SERVER_FQDN/ub-unibas/ci/sbt-components/build@main
+   inputs:
+     scala_version: $[[ inputs.scala_version ]]
+ - component: $CI_SERVER_FQDN/ub-unibas/ci/sbt-components/pages@main
+   inputs:
+     scala_version: $[[ inputs.scala_version ]]
+
+test-coverage:
+  extends: .test-coverage
+  rules:
+    - if: $CI_COMMIT_BRANCH == 'main'
+
+pages:
+  extends: .pages
+  rules:
+    - if: $CI_COMMIT_BRANCH == 'main'
+      changes:
+        - src/*

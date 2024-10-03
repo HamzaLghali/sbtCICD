@@ -1,0 +1,107 @@
+default:
+  tags: ["ubr"]
+
+workflow:
+  auto_cancel:
+    on_new_commit: conservative
+    on_job_failure: all
+  rules:
+    - if: $CI_MERGE_REQUEST_IID # On all merge requests in project
+    - if: $CI_COMMIT_TAG
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  
+stages: 
+  - test
+  - publish
+
+include:
+ - component: $CI_SERVER_FQDN/$CI_PROJECT_PATH/test-coverage@$CI_COMMIT_SHA
+   inputs:
+     stage: test
+ - component: $CI_SERVER_FQDN/$CI_PROJECT_PATH/test@$CI_COMMIT_SHA
+   inputs:
+     stage: test
+ - component: $CI_SERVER_FQDN/$CI_PROJECT_PATH/build@$CI_COMMIT_SHA
+   inputs:
+     stage: test
+     additional_libs: python3
+ - component: $CI_SERVER_FQDN/$CI_PROJECT_PATH/publish-lib@$CI_COMMIT_SHA
+   inputs:
+     stage: test
+ - component: $CI_SERVER_FQDN/$CI_PROJECT_PATH/pages@$CI_COMMIT_SHA
+   inputs:
+     stage: test
+ - component: $CI_SERVER_FQDN/ub-unibas/ci/docker-components/publish-image@main
+   inputs:
+     stage: test
+
+publish-image:
+  extends: .publish-image
+  variables:
+    IMAGE_TAG: hello-world:latest
+  needs: ["build"]
+
+publish-lib:
+  extends: .publish-lib
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^\d+.\d+.\d+$/
+
+check-description:
+  stage: test
+  image: badouralix/curl-jq
+  script:
+    - |
+      route="https://gitlab.switch.ch/api/v4/projects/$CI_PROJECT_ID"
+      desc=`curl --silent $route | jq '.description'`
+      if [ "$desc" = "null" ]; then
+        echo "Description not set. Please set a project description as this is a requirement for components"
+        exit 1
+      else
+        echo "Description set"
+      fi
+    
+
+check-readme:
+  stage: test
+  image: busybox
+  script:
+    - ls README.md || (echo "Please add a README.md file" && exit 1)
+
+check-default-component:
+  stage: test
+  image: busybox
+  script:
+    - ls templates/*-default.yml || (echo "Please add a default component templates/sbt-default.yml" && exit 1)
+
+check-job-names:
+  stage: test
+  image:
+    name: mikefarah/yq:4.44.2
+    entrypoint: [""]
+  script:
+    - |
+      for tmpl in templates/*.*; do
+        echo "Checking file $tmpl..."
+        if [[ ! $tmpl == *.yml ]]; then
+          echo $tmpl ": Only *.yml files in templates direcotry allowed"
+          exit 1
+        else
+          echo "OK: $tmpl has yml extension"
+        fi
+        if [ $tmpl != "templates/base.yml" ] && [ $tmpl != "templates/sbt-default.yml" ]; then
+          export BASE_NAME=`basename $tmpl .yml`
+          (yq -e 'select(di == 1) | has(strenv(BASE_NAME))' $tmpl && echo "OK: $tmpl contains job $BASE_NAME") || (echo $tmpl ": Job should have same name as file" && exit 1)
+          (yq -e 'select(di == 1) | has("." + strenv(BASE_NAME))' $tmpl && echo "OK: $tmpl contains hidden job .$BASE_NAME") || (echo $tmpl ": Hidden job should exist and have same name as job" && exit 1)
+        fi
+      done
+
+create-release:
+  stage: publish
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^\d+.\d+.\d+$/
+  script:
+    - echo "running release job"
+  release:
+    tag_name: '$CI_COMMIT_TAG'
+    description: "Release $CI_COMMIT_TAG of components repository $CI_PROJECT_PATH"
